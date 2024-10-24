@@ -1,29 +1,8 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-
-let phonebook = [
-  {
-    id: '1',
-    name: 'Arto Hellas',
-    number: '040-123456',
-  },
-  {
-    id: '2',
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-  },
-  {
-    id: '3',
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-  },
-  {
-    id: '4',
-    name: 'Mary Poppendieck',
-    number: '39-23-6423122',
-  },
-];
+require('dotenv').config();
+const Person = require('./models/person');
 
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
@@ -52,32 +31,21 @@ const getFormattedDate = () => {
   return `${formattedDate}, ${timezoneString}`;
 };
 
-// generate IDs of length 4
-const generateShortID = () => {
-  const idLength = 4;
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < idLength; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
-
 app.get('/', (req, res) => {
   res.send('<h1>Hello!</h1>');
 });
 
 app.get('/info', (req, res) => {
   res.send(
-    `Phone book has info for ${
-      phonebook.length
-    } people <br><br>${getFormattedDate()}`
+    `Phone book has info for ${'phonebook.length'} people <br><br>${getFormattedDate()}`
   );
 });
 
 app.get('/api/persons', (req, res) => {
-  res.json(phonebook);
+  // res.json(phonebook);
+  Person.find({}).then(notes => {
+    res.json(notes);
+  });
 });
 
 app.get('/api/persons/:id', (req, res) => {
@@ -98,6 +66,7 @@ app.delete('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons', (req, res) => {
   const body = req.body;
+  const { name, number } = body;
 
   if (!body.name || !body.number) {
     return res.status(400).json({
@@ -105,25 +74,32 @@ app.post('/api/persons', (req, res) => {
     });
   }
 
-  const existingPerson = phonebook.find(
-    person => person.name.toLowerCase() === body.name.toLowerCase()
-  );
+  const person = new Person({
+    name,
+    number,
+  });
 
-  if (existingPerson) {
-    return res.status(400).json({
-      error: 'name must be unique',
-    });
-  }
-  const person = {
-    id: generateShortID(),
-    name: body.name,
-    number: body.number,
-  };
-  phonebook = phonebook.concat(person);
-  res.json(person);
+  person.save().then(savedPerson => res.send(savedPerson));
+
+  // const existingPerson = phonebook.find(
+  //   person => person.name.toLowerCase() === body.name.toLowerCase()
+  // );
+
+  // if (existingPerson) {
+  //   return res.status(400).json({
+  //     error: 'name must be unique',
+  //   });
+  // }
+  // const person = {
+  //   id: generateShortID(),
+  //   name: body.name,
+  //   number: body.number,
+  // };
+  // phonebook = phonebook.concat(person);
+  // res.json(person);
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
