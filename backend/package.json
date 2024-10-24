@@ -17,6 +17,8 @@
   "dependencies": {
     "express": "^4.21.1",
     "http": "^0.0.1-security",
+    "mongodb": "^6.10.0",
+    "mongoose": "^8.7.2",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
