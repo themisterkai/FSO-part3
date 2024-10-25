@@ -43,7 +43,7 @@ if (name == null || number == null) {
     mongoose.connection.close();
   });
 } else {
-  person.save().then(result => {
+  person.save().then(() => {
     console.log(`Added ${name} number ${number} to phonebook`);
     mongoose.connection.close();
   });

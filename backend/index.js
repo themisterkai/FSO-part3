@@ -31,11 +31,11 @@ const getFormattedDate = () => {
   return `${formattedDate}, ${timezoneString}`;
 };
 
-app.get('/', (req, res, next) => {
+app.get('/', (req, res) => {
   res.send('<h1>Hello!</h1>');
 });
 
-app.get('/info', (req, res, next) => {
+app.get('/info', (req, res) => {
   res.send(
     `Phone book has info for ${'phonebook.length'} people <br><br>${getFormattedDate()}`
   );
@@ -85,7 +85,7 @@ app.post('/api/persons', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
-    .then(result => res.status(204).end())
+    .then(() => res.status(204).end())
     .catch(error => next(error));
 });
 
@@ -104,6 +104,8 @@ app.put('/api/persons/:id', (req, res, next) => {
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' });
 };
+
+app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
