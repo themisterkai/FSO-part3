@@ -27,3 +27,7 @@ This repository contains the backend code for Part 3 of the [Full Stack Open cou
 > npm build:ui
 > npm run dev
 ```
+
+## Deployed version
+
+You can visit a deployed version of the app [here](https://fullstackopen-part3-wandering-darkness-5697.fly.dev/)
