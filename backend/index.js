@@ -31,40 +31,38 @@ const getFormattedDate = () => {
   return `${formattedDate}, ${timezoneString}`;
 };
 
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
   res.send('<h1>Hello!</h1>');
 });
 
-app.get('/info', (req, res) => {
+app.get('/info', (req, res, next) => {
   res.send(
     `Phone book has info for ${'phonebook.length'} people <br><br>${getFormattedDate()}`
   );
 });
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   // res.json(phonebook);
-  Person.find({}).then(notes => {
-    res.json(notes);
-  });
+  Person.find({})
+    .then(notes => {
+      res.json(notes);
+    })
+    .catch(error => next(error));
 });
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const person = phonebook.find(person => person.id === id);
-  if (person != null) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  }
+app.get('/api/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id)
+    .then(person => {
+      if (person != null) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch(error => next(error));
 });
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  phonebook = phonebook.filter(person => person.id !== id);
-  res.status(204).end();
-});
-
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body;
   const { name, number } = body;
 
@@ -79,25 +77,45 @@ app.post('/api/persons', (req, res) => {
     number,
   });
 
-  person.save().then(savedPerson => res.send(savedPerson));
-
-  // const existingPerson = phonebook.find(
-  //   person => person.name.toLowerCase() === body.name.toLowerCase()
-  // );
-
-  // if (existingPerson) {
-  //   return res.status(400).json({
-  //     error: 'name must be unique',
-  //   });
-  // }
-  // const person = {
-  //   id: generateShortID(),
-  //   name: body.name,
-  //   number: body.number,
-  // };
-  // phonebook = phonebook.concat(person);
-  // res.json(person);
+  person
+    .save()
+    .then(savedPerson => res.send(savedPerson))
+    .catch(error => next(error));
 });
+
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndDelete(req.params.id)
+    .then(result => res.status(204).end())
+    .catch(error => next(error));
+});
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const body = req.body;
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  };
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => res.json(updatedPerson))
+    .catch(error => next(error));
+});
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+};
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
