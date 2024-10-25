@@ -64,21 +64,19 @@ const App = () => {
       // Update the person's record if the user confirms.
       phonebook
         .updatePerson(existingPerson.id, newPerson)
-        .then(data =>
+        .then(data => {
           setPersons(
             persons.map(person => (person.id === data.id ? data : person))
-          )
-        )
-        .catch(error => {
-          setErrorMessage(
-            `Information of ${newName} has already been removed from the server`
           );
+          setNewName('');
+          setNewPhone('');
+        })
+        .catch(error => {
+          setErrorMessage(`${error.response.data.error}`);
           setTimeout(() => {
             setErrorMessage(null);
           }, 5000);
         });
-      setNewName('');
-      setNewPhone('');
     }
   };
 
