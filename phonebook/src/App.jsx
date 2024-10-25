@@ -35,14 +35,22 @@ const App = () => {
     if (existingPerson == null) {
       phonebook
         .addPerson(newPerson)
-        .then(data => setPersons([...persons, data]));
-      setNewName('');
-      setNewPhone('');
+        .then(data => {
+          setPersons([...persons, data]);
+          setNewName('');
+          setNewPhone('');
 
-      setMessage(`Added ${newName}`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+          setMessage(`Added ${newName}`);
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        })
+        .catch(error => {
+          setErrorMessage(`${error.response.data.error}`);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+        });
     } else {
       // For cases where the person is already in the phonebook, we ask the user
       // for confirmation if they want to update the person's record
@@ -76,7 +84,6 @@ const App = () => {
 
   const deletePerson = id => {
     phonebook.deletePerson(id).then(data => {
-      console.log('in delete', data);
       const afterDelete = persons.filter(person => person.id !== id);
       setPersons(afterDelete);
     });
