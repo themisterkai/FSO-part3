@@ -4,7 +4,6 @@ const Notification = ({ message, isError }) => {
   }
 
   if (isError) {
-    console.log('here in isError', message, isError);
     return <div className="error">{message}</div>;
   }
   return <div className="message">{message}</div>;
